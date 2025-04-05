@@ -1,125 +1,83 @@
 #!/usr/bin/env python3
 
-def main():
-    # Define party items with their values
-    party_items = [
-        {"name": "Cake", "value": 20},
-        {"name": "Balloons", "value": 21},
-        {"name": "Music System", "value": 10},
-        {"name": "Lights", "value": 5},
-        {"name": "Catering Service", "value": 8},
-        {"name": "DJ", "value": 3},
-        {"name": "Photo Booth", "value": 15},
-        {"name": "Tables", "value": 7},
-        {"name": "Chairs", "value": 12},
-        {"name": "Drinks", "value": 6},
-        {"name": "Party Hats", "value": 9},
-        {"name": "Streamers", "value": 18},
-        {"name": "Invitation Cards", "value": 4},
-        {"name": "Party Games", "value": 2},
-        {"name": "Cleaning Service", "value": 11}
-    ]
+import cgi
+import cgitb
 
-    # Display the list of party items
-    print("Available Party Items:")
-    for i, item in enumerate(party_items):
-        print(f"{i}: {item['name']}")
-    
-    # Get user input for item selection
-    try:
-        user_input = input("\nEnter item indices separated by commas (e.g., 0, 2): ")
-        selected_indices = [int(idx.strip()) for idx in user_input.split(',')]
-        
-        # Validate indices
-        for idx in selected_indices:
-            if idx < 0 or idx >= len(party_items):
-                print(f"Invalid index: {idx}. Please use indices between 0 and {len(party_items) - 1}.")
-                return
-        
-        # Get selected items and their values
-        selected_items = [party_items[idx] for idx in selected_indices]
-        
-        # Calculate base party code using bitwise AND
-        if not selected_items:
-            print("No items selected. Please select at least one item.")
-            return
-            
-        base_code = selected_items[0]["value"]
-        bitwise_expression = f"{base_code}"
-        
-        for item in selected_items[1:]:
-            base_code &= item["value"]
-            bitwise_expression += f" & {item['value']}"
-        
-        # Apply conditions to modify the base code
-        message = ""
+cgitb.enable()  # Enable error display in the browser
+
+# Dictionary of party items and their corresponding values
+party_items = {
+    0: ("Cake", 20),
+    1: ("Balloons", 21),
+    2: ("Music System", 10),
+    3: ("Lights", 5),
+    4: ("Catering Service", 8),
+    5: ("DJ", 3),
+    6: ("Photo Booth", 15),
+    7: ("Tables", 7),
+    8: ("Chairs", 12),
+    9: ("Drinks", 6),
+    10: ("Party Hats", 9),
+    11: ("Streamers", 18),
+    12: ("Invitation Cards", 4),
+    13: ("Party Games", 2),
+    14: ("Cleaning Service", 11)
+}
+
+def calculate_party_code(selected_indices):
+    if not selected_indices:
+        return 0, 0, "No items selected."
+
+    # Convert to int and extract values
+    selected_indices = [int(i) for i in selected_indices]
+    selected_names = [party_items[i][0] for i in selected_indices]
+    selected_values = [party_items[i][1] for i in selected_indices]
+
+    # Perform bitwise AND across all values
+    base_code = selected_values[0]
+    for val in selected_values[1:]:
+        base_code &= val
+
+    # Adjust base code with logic
+    if base_code == 0:
+        final_code = base_code + 5
+        message = "Epic Party Incoming!"
+    elif base_code > 5:
+        final_code = base_code - 2
+        message = "Let's keep it classy!"
+    else:
         final_code = base_code
-        
-        if base_code == 0:
-            final_code = base_code + 5
-            message = "Epic Party Incoming!"
-        elif base_code > 5:
-            final_code = base_code - 2
-            message = "Let's keep it classy!"
-        else:
-            message = "Chill vibes only!"
-        
-        # Prepare selected item names for output
-        selected_names = [item["name"] for item in selected_items]
-        
-        # Generate HTML output
-        html_output = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Party Planner Results</title>
-            <style>
-                body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                .result-container {{ background-color: #f7f7f7; padding: 20px; border-radius: 5px; }}
-                .highlight {{ font-weight: bold; color: #007bff; }}
-            </style>
-        </head>
-        <body>
-            <div class="result-container">
-                <h2>Party Planner Results</h2>
-                <p><span class="highlight">Selected Items:</span> {', '.join(selected_names)}</p>
-                <p><span class="highlight">Base Party Code:</span> {bitwise_expression} = {base_code}</p>
-                
-                <p><span class="highlight">Adjusted Party Code:</span> 
-                {base_code} {'+' if base_code == 0 else '-' if base_code > 5 else ''} {5 if base_code == 0 else 2 if base_code > 5 else ''} 
-                {f'= {final_code}' if base_code == 0 or base_code > 5 else ''}</p>
-                
-                <p><span class="highlight">Final Party Code:</span> {final_code}</p>
-                <p><span class="highlight">Message:</span> {message}</p>
-            </div>
-        </body>
-        </html>
-        """
-        
-        # Display HTML output
-        print("\nHTML Output:")
-        print(html_output)
-        
-        # Save HTML output to a file
-        with open("party_result.html", "w") as file:
-            file.write(html_output)
-        print("\nResults saved to party_result.html")
-        
-        # Display console output
-        print("\nConsole Output:")
-        print(f"Selected Items: {', '.join(selected_names)}")
-        print(f"Base Party Code: {bitwise_expression} = {base_code}")
-        if base_code == 0:
-            print(f"Adjusted Party Code: {base_code} + 5 = {final_code}")
-        elif base_code > 5:
-            print(f"Adjusted Party Code: {base_code} - 2 = {final_code}")
-        print(f"Final Party Code: {final_code}")
-        print(f"Message: {message}")
-        
-    except ValueError:
-        print("Invalid input. Please enter valid indices separated by commas.")
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        message = "Chill vibes only!"
 
-if __name__ == "__main__":
-    main()
+    return base_code, final_code, message, selected_names, selected_values
+
+# Print HTTP headers
+print("Content-Type: text/html\n")
+
+# Get form data
+form = cgi.FieldStorage()
+selected_items = form.getlist("items")
+
+# Calculate party code and message
+try:
+    base_code, final_code, message, names, values = calculate_party_code(selected_items)
+except Exception as e:
+    print(f"<h1>Error</h1><p>{e}</p>")
+    exit()
+
+# Generate HTML output
+print(f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Party Plan</title>
+</head>
+<body>
+    <h1>🎉 Your Party Plan 🎉</h1>
+    <p><strong>Selected Items:</strong> {', '.join(names)}</p>
+    <p><strong>Base Party Code:</strong> {' & '.join(str(v) for v in values)} = {base_code}</p>
+    <p><strong>Final Party Code:</strong> {final_code}</p>
+    <p><strong>Message:</strong> {message}</p>
+</body>
+</html>
+""")
